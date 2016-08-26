@@ -1,7 +1,8 @@
 const {
   compose, sum, values, map, apply,
   subtract, zip, filter, count, where,
-  equals, pluck, curry, curryN, reduce, min
+  equals, pluck, curry, curryN, reduce, min,
+  nth
 } = R;
 
 const mons = [
@@ -25,7 +26,7 @@ const x = pos => pos[0];
 const y = pos => pos[1];
 
 // number -> number
-const square = x => x**2;
+const square = x => x ** 2;
 
 // [numbers] -> number
 const absDelta = compose(Math.abs, apply(subtract));
@@ -42,12 +43,33 @@ const debug = curry((title, value) => {
   return value;
 })
 
-describe("Pokemon-Kata" , () => {
-  it("should find the nearest Pokemon distance", () => {
-    expect("Your Code Here").toBeCloseTo(21.9, 1);
+describe("Pokemon-Kata", () => {
+  it("should find the nearest Pokemon distance of type normal", () => {
+    const nearestNormalPokemonDistance = R.pipe(
+      filter(R.whereEq({type: 'Normal'})),
+      pluck('position'),
+      map(distance(playerPosition)),
+      reduce(min, Infinity)
+    )
+    expect(nearestNormalPokemonDistance(mons)).toBeCloseTo(21.9, 1);
   });
 
-  it("should find the name of the nearest Pokemon");
+  it("should find the name of the nearest Pokemon", () => {
+    const monNames = pluck('name')
+    const monDistances = R.pipe(pluck('position'), map(distance(playerPosition)))
+    const nameAndDistancePair = curryN(2, zip)(
+      monNames(mons),
+      monDistances(mons)
+    )
+
+    const nearestMon = R.reduce((mon, nearestMon) => {
+      return mon[1] < nearestMon[1] ? mon : nearestMon
+    }, Infinity)
+
+    const nearestPokemonName = R.pipe(nearestMon, nth(0))
+
+    expect(nearestPokemonName(nameAndDistancePair)).toEqual('Magikarp')
+  })
 
 });
 
